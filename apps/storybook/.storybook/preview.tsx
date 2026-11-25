@@ -4,9 +4,19 @@ import { withThemeByClassName } from "@storybook/addon-themes";
 import "@fontsource-variable/manrope";
 import "../src/styles.css";
 import "./preview.css";
+import { addons } from "storybook/preview-api";
+import { GLOBALS_UPDATED, SET_GLOBALS } from "storybook/internal/core-events";
 import { withProviders } from "./providers";
 
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+// Docs-only (MDX) pages render no story, so the theme decorator never runs there.
+// Mirror the toolbar choice onto <html> ourselves so those pages follow light/dark too.
+const syncTheme = ({ globals }: { globals?: { theme?: string } }) => {
+  if (globals?.theme) document.documentElement.classList.toggle("dark", globals.theme === "dark");
+};
+addons.getChannel().on(SET_GLOBALS, syncTheme);
+addons.getChannel().on(GLOBALS_UPDATED, syncTheme);
 
 const preview: Preview = {
   tags: ["autodocs"],

@@ -4,6 +4,8 @@ import { create } from "storybook/theming";
 // packages/ui/src/styles/theme.css (Storybook's theme API needs sRGB).
 const base = {
   brandTitle: "Ektyra UI",
+  brandUrl: "/",
+  brandTarget: "_self",
   fontBase: '"Manrope Variable", ui-sans-serif, system-ui, sans-serif',
   fontCode: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
   appBorderRadius: 8,
@@ -13,6 +15,7 @@ const base = {
 export const light = create({
   base: "light",
   ...base,
+  brandImage: "./logo-light.svg",
   colorPrimary: "#6041ec",
   colorSecondary: "#6041ec",
   appBg: "#f6f6f9", // --sidebar
@@ -33,6 +36,7 @@ export const light = create({
 export const dark = create({
   base: "dark",
   ...base,
+  brandImage: "./logo-dark.svg",
   colorPrimary: "#7362fc",
   colorSecondary: "#7362fc",
   appBg: "#131319", // --sidebar
