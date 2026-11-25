@@ -1,0 +1,629 @@
+@layer base {
+  /* The page scrollbar matches the sidebar's: a thumb in the brand color. */
+  html {
+    @apply scrollbar-primary;
+  }
+
+  ::selection {
+    background: oklch(from var(--primary) l c h / 0.22);
+    color: var(--foreground);
+  }
+
+  input,
+  textarea {
+    caret-color: var(--primary);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+}
+
+/*
+ * Scrollbars. The thumb uses the brand color (--primary), softer at rest and
+ * stronger on hover and drag. Chrome, Edge and Safari use the ::-webkit rules;
+ * Firefox falls back to the standard properties.
+ */
+@utility scrollbar-primary {
+  scrollbar-gutter: stable;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: color-mix(in oklab, var(--primary) 35%, transparent);
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background-clip: padding-box;
+    transition: background-color 150ms;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in oklab, var(--primary) 70%, transparent);
+  }
+
+  &::-webkit-scrollbar-thumb:active {
+    background-color: var(--primary);
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--primary) 45%, transparent) transparent;
+  }
+}
+
+/* Still scrolls, but shows no scrollbar (used by the collapsed sidebar). */
+@utility scrollbar-hidden {
+  scrollbar-width: none;
+  scrollbar-gutter: auto;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Tooltip entrance: a quick fade and a slight grow. */
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@utility animate-tooltip-in {
+  animation: tooltip-in 120ms ease-out;
+}
+
+/*
+ * Code highlighting (Shiki's CSS-variables theme). Code blocks are always a dark
+ * surface (--code), so these colors are tuned for dark and used in both themes.
+ */
+:root {
+  --shiki-foreground: var(--code-foreground);
+  --shiki-background: transparent;
+  --shiki-token-constant: oklch(0.8 0.12 70);
+  --shiki-token-string: oklch(0.82 0.13 155);
+  --shiki-token-comment: oklch(0.62 0.02 285);
+  --shiki-token-keyword: oklch(0.76 0.15 320);
+  --shiki-token-parameter: oklch(0.86 0.05 285);
+  --shiki-token-function: oklch(0.78 0.13 245);
+  --shiki-token-string-expression: oklch(0.82 0.13 155);
+  --shiki-token-punctuation: oklch(0.72 0.02 285);
+  --shiki-token-link: oklch(0.76 0.14 245);
+}
+
+.code-block .shiki {
+  margin: 0;
+  background: transparent !important;
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+}
+
+/* Rich text editor content (Tiptap). */
+@layer components {
+  .rich-text > * + * {
+    margin-top: 0.75rem;
+  }
+  .rich-text h2 {
+    font-size: 1.25rem;
+    letter-spacing: -0.01em;
+  }
+  .rich-text ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+  }
+  .rich-text ol {
+    list-style: decimal;
+    padding-left: 1.25rem;
+  }
+  .rich-text blockquote {
+    border-left: 2px solid var(--border);
+    padding-left: 1rem;
+    color: var(--muted-foreground);
+  }
+  .rich-text code {
+    border-radius: 0.25rem;
+    background: var(--muted);
+    padding: 0.1rem 0.35rem;
+    font-size: 0.875em;
+  }
+  .rich-text s {
+    color: var(--muted-foreground);
+  }
+}
+
+/*
+ * Overlay animations (dialog, sheet, hover card, menus). Radix keeps an element
+ * mounted while its exit animation runs, so every "in" has a matching "out".
+ */
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes overlay-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+}
+@keyframes dialog-out {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+}
+@keyframes sheet-right-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes sheet-right-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes sheet-left-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+@keyframes sheet-left-out {
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes sheet-top-in {
+  from {
+    transform: translateY(-100%);
+  }
+}
+@keyframes sheet-top-out {
+  to {
+    transform: translateY(-100%);
+  }
+}
+@keyframes sheet-bottom-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes sheet-bottom-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@utility animate-overlay-in {
+  animation: overlay-in 150ms ease-out;
+}
+@utility animate-overlay-out {
+  animation: overlay-out 120ms ease-in forwards;
+}
+@utility animate-dialog-in {
+  animation: dialog-in 180ms var(--ease-out-expo);
+}
+@utility animate-dialog-out {
+  animation: dialog-out 120ms ease-in forwards;
+}
+@utility animate-sheet-right-in {
+  animation: sheet-right-in 280ms var(--ease-out-expo);
+}
+@utility animate-sheet-right-out {
+  animation: sheet-right-out 200ms ease-in forwards;
+}
+@utility animate-sheet-left-in {
+  animation: sheet-left-in 280ms var(--ease-out-expo);
+}
+@utility animate-sheet-left-out {
+  animation: sheet-left-out 200ms ease-in forwards;
+}
+@utility animate-sheet-top-in {
+  animation: sheet-top-in 280ms var(--ease-out-expo);
+}
+@utility animate-sheet-top-out {
+  animation: sheet-top-out 200ms ease-in forwards;
+}
+@utility animate-sheet-bottom-in {
+  animation: sheet-bottom-in 280ms var(--ease-out-expo);
+}
+@utility animate-sheet-bottom-out {
+  animation: sheet-bottom-out 200ms ease-in forwards;
+}
+
+/* Accordion and collapsible: animate to and from the measured content height. */
+@keyframes collapse-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height, var(--radix-collapsible-content-height));
+  }
+}
+@keyframes collapse-up {
+  from {
+    height: var(--radix-accordion-content-height, var(--radix-collapsible-content-height));
+  }
+  to {
+    height: 0;
+  }
+}
+@utility animate-collapse-down {
+  animation: collapse-down 200ms var(--ease-out-expo);
+}
+@utility animate-collapse-up {
+  animation: collapse-up 200ms var(--ease-out-expo);
+}
+
+/* Progress without a known value: a bar that slides across. */
+@keyframes progress-indeterminate {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+@utility animate-progress-indeterminate {
+  animation: progress-indeterminate 1.4s ease-in-out infinite;
+}
+
+/*
+ * Toast countdown. Sonner already uses ::before and ::after on a toast, so the
+ * bar is drawn as a strip in the toast's own background instead. It shrinks to
+ * nothing over `--toast-duration`, which `notify` (core/toast) keeps equal to the
+ * toast's real duration. While a task runs (type "loading") it moves back and
+ * forth instead, because the end is unknown.
+ */
+@property --toast-remaining {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+
+[data-sonner-toast] {
+  --toast-accent: var(--primary);
+}
+[data-sonner-toast][data-type="success"] {
+  --toast-accent: var(--success);
+}
+[data-sonner-toast][data-type="error"] {
+  --toast-accent: var(--destructive);
+}
+[data-sonner-toast][data-type="warning"] {
+  --toast-accent: var(--warning);
+}
+[data-sonner-toast][data-type="info"] {
+  --toast-accent: var(--info);
+}
+
+/* Repeated class names raise the specificity above Sonner's own background rules. */
+[data-sonner-toast][data-styled="true"].toast-countdown.toast-countdown {
+  background-image: linear-gradient(var(--toast-accent), var(--toast-accent));
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: var(--toast-remaining) 3px;
+  animation: toast-countdown var(--toast-duration, 5000ms) linear forwards;
+}
+
+/* Sonner pauses its timer while the toasts are hovered or focused; so does the bar. */
+[data-sonner-toast][data-styled="true"][data-expanded="true"].toast-countdown.toast-countdown {
+  animation-play-state: paused;
+}
+
+[data-sonner-toast][data-styled="true"][data-type="loading"].toast-countdown.toast-countdown {
+  background-size: 40% 3px;
+  animation: toast-working 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes toast-countdown {
+  to {
+    --toast-remaining: 0%;
+  }
+}
+
+@keyframes toast-working {
+  from {
+    background-position: -10% bottom;
+  }
+  to {
+    background-position: 110% bottom;
+  }
+}
+
+/* Form errors slide in softly, so a new message is noticed without a jolt. */
+@keyframes field-error-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.375rem);
+  }
+}
+@utility animate-field-error {
+  animation: field-error-in 220ms var(--ease-out-expo);
+}
+
+/*
+ * Fades the scrollbar thumb out while the area is idle (see useAutohideScrollbar,
+ * which sets data-idle="true" after a pause). Holding or pointing at the thumb itself
+ * keeps it visible. Add it next to scrollbar-primary.
+ */
+@utility scrollbar-autohide {
+  &::-webkit-scrollbar-thumb {
+    transition: background-color 500ms ease;
+  }
+
+  &[data-idle="true"]::-webkit-scrollbar-thumb:not(:hover, :active) {
+    background-color: transparent;
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    transition: scrollbar-color 500ms ease;
+
+    &[data-idle="true"] {
+      scrollbar-color: transparent transparent;
+    }
+  }
+}
+
+/*
+ * Leaflet maps follow the theme: popups, zoom buttons and the attribution use our
+ * tokens, and pins use the brand color. `isolation` keeps Leaflet's own high
+ * z-index values inside the map, so menus and the navbar stay on top of it.
+ */
+.leaflet-container {
+  isolation: isolate;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  background: var(--muted);
+}
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: var(--shadow-lg);
+}
+.leaflet-popup-content {
+  margin: 0.75rem 1rem;
+  line-height: 1.45;
+}
+.leaflet-popup-tip {
+  background: var(--popover);
+}
+.leaflet-container a.leaflet-popup-close-button {
+  color: var(--muted-foreground);
+}
+.leaflet-bar {
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  border-radius: calc(var(--radius) - 0.25rem);
+  overflow: hidden;
+}
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: var(--card);
+  color: var(--foreground);
+  border-bottom-color: var(--border);
+}
+.leaflet-bar a:hover {
+  background: var(--muted);
+}
+.leaflet-bar a.leaflet-disabled {
+  color: var(--muted-foreground);
+  background: var(--card);
+}
+.leaflet-container .leaflet-control-attribution {
+  background: color-mix(in oklab, var(--card) 80%, transparent);
+  color: var(--muted-foreground);
+}
+.leaflet-container .leaflet-control-attribution a {
+  color: var(--primary);
+}
+
+/* A map pin: a drop shape in the brand color with a dot, drawn in CSS. */
+.map-pin {
+  background: none;
+  border: 0;
+}
+.map-pin span {
+  display: block;
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--card);
+  border-radius: 50% 50% 50% 0;
+  background: var(--primary);
+  box-shadow: var(--shadow-md);
+  transform: rotate(-45deg);
+  transition:
+    transform 150ms ease,
+    background-color 150ms ease;
+}
+.map-pin span::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: var(--card);
+}
+.map-pin:hover span,
+.map-pin.is-active span {
+  transform: rotate(-45deg) scale(1.15);
+}
+.map-pin.is-active span {
+  background: var(--chart-2);
+}
+
+/* Dark base map without a dark tile provider: invert the light tiles, then turn the hues back. */
+.map-dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.92) saturate(0.6);
+}
+
+/*
+ * The notification bell rings once when the page loads (2 seconds in all: a quick
+ * shake, then still). It swings from the top, like a real bell.
+ */
+@keyframes bell-ring {
+  0%,
+  45%,
+  100% {
+    transform: rotate(0);
+  }
+  5% {
+    transform: rotate(16deg);
+  }
+  10% {
+    transform: rotate(-14deg);
+  }
+  15% {
+    transform: rotate(12deg);
+  }
+  20% {
+    transform: rotate(-10deg);
+  }
+  25% {
+    transform: rotate(7deg);
+  }
+  30% {
+    transform: rotate(-5deg);
+  }
+  35% {
+    transform: rotate(3deg);
+  }
+  40% {
+    transform: rotate(-1deg);
+  }
+}
+@utility animate-bell {
+  transform-origin: 50% 0;
+  animation: bell-ring 2s ease-in-out 1;
+}
+
+/*
+ * Preloader (core/appearance). A full-screen cover for the first load. The chosen kind is
+ * `<html data-preloader="…">`, set before first paint, so the right animation is up right
+ * away. The preview used by the theme customizer picks its kind from its own data-kind.
+ */
+.app-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  place-items: center;
+  background: var(--background);
+  transition:
+    opacity 400ms ease,
+    visibility 0s 400ms;
+}
+.app-preloader[data-done="true"] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+html[data-preloader]:not([data-preloader="none"]) .app-preloader:not(.app-preloader-preview) {
+  display: grid;
+}
+
+.preloader-art {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  color: var(--foreground);
+}
+html[data-preloader="rotating"] .app-preloader:not(.app-preloader-preview) [data-kind="rotating"],
+html[data-preloader="spinning"] .app-preloader:not(.app-preloader-preview) [data-kind="spinning"],
+html[data-preloader="loading"] .app-preloader:not(.app-preloader-preview) [data-kind="loading"],
+.app-preloader-preview[data-kind="rotating"] [data-kind="rotating"],
+.app-preloader-preview[data-kind="spinning"] [data-kind="spinning"],
+.app-preloader-preview[data-kind="loading"] [data-kind="loading"] {
+  display: flex;
+}
+
+/* Preview: fade in, hold, fade out, never blocks clicks. */
+.app-preloader-preview {
+  display: grid;
+  pointer-events: none;
+  animation: preloader-preview 1.8s ease forwards;
+}
+@keyframes preloader-preview {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  15%,
+  80% {
+    opacity: 1;
+  }
+}
+
+[data-kind="rotating"] svg {
+  animation: preloader-rotate 1.6s var(--ease-out-expo) infinite;
+}
+@keyframes preloader-rotate {
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+.preloader-ring {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  border: 3px solid color-mix(in oklab, var(--primary) 20%, transparent);
+  border-top-color: var(--primary);
+  animation: preloader-spin 0.8s linear infinite;
+}
+@keyframes preloader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.preloader-bar {
+  position: relative;
+  width: 9rem;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--primary) 20%, transparent);
+}
+.preloader-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  border-radius: inherit;
+  background: var(--primary);
+  animation: progress-indeterminate 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-kind="rotating"] svg,
+  .preloader-ring,
+  .preloader-bar::after {
+    animation: none;
+  }
+  .app-preloader,
+  .app-preloader-preview {
+    transition: none;
+  }
+}
+
+/*
+ * A soft color chip. Set --tone (an OKLCH color) on the element: the background is a light
+ * tint of it and the text is the same hue pulled toward the foreground, so it reads in both
+ * themes. Used for field types and component kinds in the CMS builder.
+ */
+@utility tone {
+  background-color: color-mix(in oklab, var(--tone) 16%, transparent);
+  color: color-mix(in oklab, var(--tone) 62%, var(--foreground));
+}
