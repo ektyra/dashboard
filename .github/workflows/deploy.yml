@@ -17,33 +17,47 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [dashboard, storybook]
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: voidzero-dev/setup-vp@v1
         with:
           cache: true
       - run: vp install --frozen-lockfile
-      - run: vp run @ektyra/dashboard#build
+      - run: vp run @ektyra/${{ matrix.app }}#build
 
       - name: Deploy (production)
         if: github.event_name == 'push'
-        working-directory: apps/dashboard
-        run: vp exec wrangler deploy
+        working-directory: apps/${{ matrix.app }}
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          vp exec wrangler deploy \
+            --tag "${GITHUB_SHA::7}" \
+            --message "$(printf '%s' "$COMMIT_MESSAGE" | head -n1)"
 
       - name: Upload version (preview)
         if: github.event_name == 'pull_request'
         id: preview
-        working-directory: apps/dashboard
+        working-directory: apps/${{ matrix.app }}
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.number }}
         run: |
-          vp exec wrangler versions upload --tag "pr-${{ github.event.number }}" --message "PR #${{ github.event.number }}" | tee out.txt
+          vp exec wrangler versions upload --tag "pr-${PR_NUMBER}" --message "$PR_TITLE" | tee out.txt
           echo "url=$(grep -oE 'https://[^ ]+workers\.dev' out.txt | head -1)" >> "$GITHUB_OUTPUT"
 
       - name: Comment preview URL
         if: github.event_name == 'pull_request' && steps.preview.outputs.url != ''
         env:
           GH_TOKEN: ${{ github.token }}
+          APP: ${{ matrix.app }}
+          URL: ${{ steps.preview.outputs.url }}
         run: |
-          gh pr comment ${{ github.event.number }} --body "Preview version uploaded: ${{ steps.preview.outputs.url }}"
+          gh pr comment "${{ github.event.number }}" --body "Preview version of \`$APP\` uploaded: $URL"

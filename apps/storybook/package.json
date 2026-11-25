@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "storybook dev -p 6006",
-    "build": "storybook build"
+    "build": "storybook build",
+    "deploy": "storybook build && wrangler deploy"
   },
   "dependencies": {
     "@ektyra/ui": "workspace:*",
@@ -21,6 +22,7 @@
     "storybook": "latest",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "wrangler": "catalog:"
   }
 }
