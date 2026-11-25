@@ -12,6 +12,9 @@ addons.register("ektyra/theme-sync", (api) => {
     const chosen = (api.getGlobals() as { theme?: string }).theme;
     const isDark = chosen ? chosen === "dark" : systemDark();
     api.setOptions({ theme: isDark ? dark : light });
+    const root = document.documentElement.style;
+    root.setProperty("--ek-selected-bg", isDark ? "#292850" : "#e4e6ff");
+    root.setProperty("--ek-selected-fg", isDark ? "#e0e2ff" : "#291970");
   };
   api.on(GLOBALS_UPDATED, apply);
   apply();

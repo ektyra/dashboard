@@ -31,3 +31,17 @@ html body .sbdocs th {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+/* Links styled with utility classes (cards, buttons) are not prose links. */
+html body .sbdocs a[class] {
+  text-decoration: none;
+}
+html body .sbdocs a.bg-primary {
+  color: var(--primary-foreground);
+}
+html body .sbdocs a.text-foreground {
+  color: var(--foreground);
+}
+html body .sbdocs-content :is(p, li, span, strong, a) {
+  line-height: inherit;
+}

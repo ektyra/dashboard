@@ -1,0 +1,149 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+import { EktyraLogo } from "./brand/ektyra-logo";
+
+<Meta title="Welcome" />
+
+<div className="not-prose flex flex-col gap-12 py-4">
+  <header className="flex flex-col gap-6">
+    <EktyraLogo className="h-14 w-auto self-start text-foreground" />
+    <p className="max-w-2xl text-xl leading-9 text-muted-foreground">
+      The building blocks for Ektyra dashboards: design tokens, components, patterns and complete pages. Every
+      piece works in light and dark, is keyboard friendly and is built to WCAG 2.2 AA.
+    </p>
+    <div className="flex flex-wrap gap-3 text-sm">
+      <a
+        href="/?path=/docs/foundations-colors--docs"
+        target="_top"
+        className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground no-underline hover:bg-primary/90"
+      >
+        Start with the colors
+      </a>
+      <a
+        href="/?path=/story/templates-dashboard--default"
+        target="_top"
+        className="rounded-md border border-border px-4 py-2 font-medium text-foreground no-underline hover:bg-muted"
+      >
+        See a full page
+      </a>
+    </div>
+  </header>
+
+<section className="flex flex-col gap-4">
+  <h2 className="text-2xl font-semibold tracking-tight text-foreground">What is inside</h2>
+  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    {[
+      [
+        "Foundations",
+        "foundations-colors--docs",
+        "Colors, type, spacing, radius, shadows, icons and the tokens behind them.",
+      ],
+      [
+        "Actions",
+        "actions-button--docs",
+        "Buttons, icon buttons, groups, split buttons and links.",
+      ],
+      [
+        "Inputs & Forms",
+        "inputs-forms-textfield--docs",
+        "Text fields, selects, pickers, uploads, switches and form sections.",
+      ],
+      [
+        "Navigation",
+        "navigation-navbar--docs",
+        "Navbar, sidebar, breadcrumbs, tabs, pagination and steppers.",
+      ],
+      [
+        "Data Display",
+        "data-display-datagrid--docs",
+        "Tables, data grids, cards, badges, avatars and timelines.",
+      ],
+      [
+        "Feedback",
+        "feedback-alert--docs",
+        "Alerts, toasts, spinners, progress, skeletons and empty states.",
+      ],
+      [
+        "Overlays",
+        "overlays-modal-and-dialog--docs",
+        "Dialogs, drawers, popovers, tooltips and menus.",
+      ],
+      [
+        "Layout",
+        "layout-container-grid-and-stack--docs",
+        "Container, grid, stack, sections, dividers and accordions.",
+      ],
+      [
+        "Typography",
+        "typography-heading-and-text--docs",
+        "Headings, text, labels, captions and code.",
+      ],
+      ["Media", "media-image--docs", "Images, carousels and video."],
+      [
+        "Patterns",
+        "patterns-loginform--docs",
+        "Sign-in form, filter bar, search bar, confirm dialog and page header.",
+      ],
+      [
+        "Templates",
+        "templates-dashboard--default",
+        "Dashboard, overview, detail and settings pages in the real app shell.",
+      ],
+    ].map(([title, id, text]) => (
+      <a
+        key={title}
+        href={`/?path=/${id.endsWith("--default") ? "story" : "docs"}/${id}`}
+        target="_top"
+        className="flex flex-col gap-1 rounded-xl border border-border bg-card p-4 text-card-foreground no-underline shadow-xs transition-colors hover:border-primary/50 hover:bg-muted"
+      >
+        <span className="font-semibold text-foreground">{title}</span>
+        <span className="text-sm leading-6 text-muted-foreground">{text}</span>
+      </a>
+    ))}
+  </div>
+</section>
+
+  <section className="grid gap-6 lg:grid-cols-2">
+    <div className="flex flex-col gap-3">
+      <h2 className="text-2xl font-semibold tracking-tight text-foreground">Using Storybook</h2>
+      <ul className="flex list-disc flex-col gap-2 pl-5 text-muted-foreground">
+        <li>
+          Use the <strong className="text-foreground">theme toggle</strong> in the toolbar to switch between light and
+          dark. It starts with your system setting.
+        </li>
+        <li>
+          Open the <strong className="text-foreground">viewport</strong> menu to check mobile (375), tablet (768) and
+          desktop (1280).
+        </li>
+        <li>
+          The <strong className="text-foreground">Accessibility</strong> tab under each story lists problems it can
+          find automatically.
+        </li>
+        <li>
+          Press <kbd className="rounded border border-border bg-muted px-1.5 text-xs">/</kbd> to search every
+          component.
+        </li>
+      </ul>
+    </div>
+    <div className="flex flex-col gap-3">
+      <h2 className="text-2xl font-semibold tracking-tight text-foreground">Principles</h2>
+      <ul className="flex list-disc flex-col gap-2 pl-5 text-muted-foreground">
+        <li>
+          <strong className="text-foreground">Tokens, not hard-coded colors.</strong> Everything reads the same
+          OKLCH tokens, so palettes and dark mode just work.
+        </li>
+        <li>
+          <strong className="text-foreground">Accessible by default.</strong> Visible focus, labels on every field,
+          contrast of at least 4.5:1, and motion that respects reduced-motion settings.
+        </li>
+        <li>
+          <strong className="text-foreground">Plain, helpful words.</strong> Say what happened and what to do next.
+          Never blame the user.
+        </li>
+        <li>
+          <strong className="text-foreground">One job per component.</strong> Combine small parts into patterns and
+          pages.
+        </li>
+      </ul>
+    </div>
+  </section>
+</div>

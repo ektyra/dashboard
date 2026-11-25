@@ -7,18 +7,12 @@ import {
   createRouter,
 } from "@tanstack/react-router";
 import { Tooltip } from "radix-ui";
-import { Toaster } from "../src/components/sonner";
 
 const StoryContext = createContext<ReactNode>(null);
 
 function Root() {
   const story = use(StoryContext);
-  return (
-    <Tooltip.Provider delayDuration={200}>
-      {story}
-      <Toaster />
-    </Tooltip.Provider>
-  );
+  return <Tooltip.Provider delayDuration={200}>{story}</Tooltip.Provider>;
 }
 
 function Shell({ children, initialPath }: { children: ReactNode; initialPath: string }) {

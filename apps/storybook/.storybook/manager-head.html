@@ -1,1 +1,16 @@
 <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+<style>
+  /* The selected item uses the Ektyra sidebar accent (same as the app's menu), not Storybook's bright blue.
+     The colors are set from manager.ts so they follow light/dark. */
+  .sidebar-item[data-selected="true"] {
+    background: var(--ek-selected-bg, #e4e6ff) !important;
+    color: var(--ek-selected-fg, #291970) !important;
+  }
+  .sidebar-item[data-selected="true"] svg,
+  .sidebar-item[data-selected="true"] span {
+    color: inherit !important;
+  }
+  .sidebar-item[data-selected="true"] [data-testid="context-menu"] {
+    color: inherit !important;
+  }
+</style>

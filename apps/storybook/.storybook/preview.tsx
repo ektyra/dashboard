@@ -6,6 +6,8 @@ import "../src/styles.css";
 import "./preview.css";
 import { addons } from "storybook/preview-api";
 import { GLOBALS_UPDATED, SET_GLOBALS } from "storybook/internal/core-events";
+import { createRoot } from "react-dom/client";
+import { Toaster } from "../src/components/sonner";
 import { withProviders } from "./providers";
 
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -17,6 +19,12 @@ const syncTheme = ({ globals }: { globals?: { theme?: string } }) => {
 };
 addons.getChannel().on(SET_GLOBALS, syncTheme);
 addons.getChannel().on(GLOBALS_UPDATED, syncTheme);
+
+// One toaster for the whole preview. A docs page renders many stories at once; a toaster per
+// story would show every toast in every container.
+const toasterHost = document.createElement("div");
+document.body.appendChild(toasterHost);
+createRoot(toasterHost).render(<Toaster />);
 
 const preview: Preview = {
   tags: ["autodocs"],
