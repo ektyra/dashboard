@@ -1,3 +1,8 @@
+/* The tokens expect the app to name the font; Storybook does it here. */
+:root {
+  --font-manrope: "Manrope Variable";
+}
+
 /* Canvas and docs pages use the same background and text as the template. */
 html,
 body {
@@ -6,23 +11,23 @@ body {
   font-family: var(--font-sans);
 }
 
-.sb-show-main,
-.docs-story,
-.sbdocs-wrapper,
-.sbdocs-content {
+html body .sb-show-main,
+html body .docs-story,
+html body .sbdocs-wrapper,
+html body .sbdocs-content {
   background: var(--background);
   color: var(--foreground);
 }
 
-.sbdocs,
-.sbdocs h1,
-.sbdocs h2,
-.sbdocs h3,
-.sbdocs h4,
-.sbdocs p,
-.sbdocs li,
-.sbdocs td,
-.sbdocs th {
+html body .sbdocs,
+html body .sbdocs h1,
+html body .sbdocs h2,
+html body .sbdocs h3,
+html body .sbdocs h4,
+html body .sbdocs p,
+html body .sbdocs li,
+html body .sbdocs td,
+html body .sbdocs th {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
