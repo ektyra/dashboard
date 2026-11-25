@@ -49,6 +49,7 @@ const preview: Preview = {
           "Media",
           "Patterns",
           "Templates",
+          "Pro",
           "Extras",
         ],
       },

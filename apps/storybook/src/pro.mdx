@@ -1,0 +1,38 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Pro/Free vs Pro" />
+
+# Free vs Pro
+
+Ektyra has a free core and a paid **Pro** tier. Pro items are marked **(Pro)** in their normal group, for example
+_Data Display / Kanban board (Pro)_.
+
+<div className="not-prose grid gap-4 sm:grid-cols-2">
+  <div className="rounded-xl border border-border bg-card p-5">
+    <p className="text-lg font-semibold text-foreground">Free</p>
+    <ul className="mt-2 flex list-disc flex-col gap-1 pl-5 text-sm text-muted-foreground">
+      <li>Tokens, palettes, light and dark</li>
+      <li>All base components and patterns</li>
+      <li>Navbar, sidebar and navigation</li>
+      <li>DataGrid with sort, select and pagination</li>
+      <li>Dashboard, overview, detail, settings and auth pages</li>
+    </ul>
+  </div>
+  <div className="rounded-xl border border-primary/40 bg-primary/5 p-5">
+    <p className="text-lg font-semibold text-foreground">Pro</p>
+    <ul className="mt-2 flex list-disc flex-col gap-1 pl-5 text-sm text-muted-foreground">
+      <li>Advanced DataGrid, Kanban, Calendar, Chart suite, File manager</li>
+      <li>Horizontal and detached layouts, landing pages</li>
+      <li>Analytics, CRM, Billing, Users and roles, Audit log, Onboarding, Error pages</li>
+      <li>Calendar, Kanban, Chat, E-commerce and Address book apps</li>
+      <li>Live theme customizer</li>
+    </ul>
+  </div>
+</div>
+
+## How a license works
+
+Pro lives in a separate private package. A license is **access to that package** (a registry token): no token, no
+install. Nothing checks the license while your dashboard runs, so it can never break production.
+
+The full reasoning and the open questions (pricing, updates, white label) are in `docs/free-vs-pro.md`.
