@@ -24,6 +24,8 @@ catalog:
   "@commitlint/cli": ^21.2.4
   "@commitlint/config-conventional": ^21.2.4
   "@storybook/react-vite": ^10.6.8
+  "@cloudflare/vite-plugin": ^1.70.1
+  wrangler: ^4.167.0
 overrides:
   vite@*: "catalog:"
 peerDependencyRules:

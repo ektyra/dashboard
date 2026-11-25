@@ -20,3 +20,8 @@ Vite+ monorepo.
 
 GitHub flow: branch off `main` (`feat/...`, `fix/...`), open PR, squash-merge.
 Commits and PR titles follow [Conventional Commits](https://www.conventionalcommits.org). Enforced by commitlint hook and CI.
+
+## Deploy
+
+`apps/dashboard` runs on Cloudflare Workers (`ektyra-dashboard`). Merging to `main` deploys; PRs upload a preview version.
+Requires repo secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
