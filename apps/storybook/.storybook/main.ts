@@ -3,7 +3,9 @@ import tailwindcss from "@tailwindcss/vite";
 
 const config: StorybookConfig = {
   framework: "@storybook/react-vite",
-  stories: ["../../../packages/ui/src/**/*.stories.@(ts|tsx)"],
+  stories: ["../stories/**/*.mdx", "../../../packages/ui/src/**/*.stories.@(ts|tsx)"],
+  addons: ["@storybook/addon-docs", "@storybook/addon-a11y", "@storybook/addon-themes"],
+  core: { disableTelemetry: true },
   viteFinal: (config) => {
     config.plugins = [...(config.plugins ?? []), tailwindcss()];
     return config;

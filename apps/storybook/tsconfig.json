@@ -1,4 +1,4 @@
 {
   "extends": "../../packages/ui/tsconfig.json",
-  "include": [".storybook", "../../packages/ui/src"]
+  "include": [".storybook", "stories", "../../packages/ui/src"]
 }
