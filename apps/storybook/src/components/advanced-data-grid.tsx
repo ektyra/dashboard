@@ -281,7 +281,8 @@ export function AdvancedDataGrid<T extends { id: string | number }>({
                   setCollapsed((cur) => {
                     const n = new Set(cur);
                     if (g.label) {
-                      n.has(g.label) ? n.delete(g.label) : n.add(g.label);
+                      if (n.has(g.label)) n.delete(g.label);
+                      else n.add(g.label);
                     }
                     return n;
                   })
