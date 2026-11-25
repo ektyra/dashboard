@@ -1,4 +1,4 @@
-/// <reference path="./css.d.ts" />
+/// <reference path="../src/css.d.ts" />
 import type { Preview } from "@storybook/react-vite";
 import { withThemeByClassName } from "@storybook/addon-themes";
 import "@fontsource-variable/manrope";
