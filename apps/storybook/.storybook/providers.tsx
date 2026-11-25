@@ -21,12 +21,12 @@ function Root() {
   );
 }
 
-function Shell({ children }: { children: ReactNode }) {
+function Shell({ children, initialPath }: { children: ReactNode; initialPath: string }) {
   // One router per story mount, so router state survives re-renders.
   const [router] = useState(() =>
     createRouter({
       routeTree: createRootRoute({ component: Root }),
-      history: createMemoryHistory({ initialEntries: ["/"] }),
+      history: createMemoryHistory({ initialEntries: [initialPath] }),
     }),
   );
   return (
@@ -37,8 +37,8 @@ function Shell({ children }: { children: ReactNode }) {
 }
 
 /** Wraps every story in a memory router, a tooltip provider and the toaster. */
-export const withProviders: Decorator = (Story) => (
-  <Shell>
+export const withProviders: Decorator = (Story, context) => (
+  <Shell initialPath={(context.parameters.initialPath as string | undefined) ?? "/"}>
     <Story />
   </Shell>
 );
