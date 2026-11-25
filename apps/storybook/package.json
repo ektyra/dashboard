@@ -11,8 +11,11 @@
   "dependencies": {
     "@ektyra/ui": "workspace:*",
     "@fontsource-variable/manrope": "catalog:",
+    "@tanstack/react-router": "catalog:",
+    "radix-ui": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "sonner": "catalog:"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "catalog:",

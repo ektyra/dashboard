@@ -4,6 +4,7 @@ import { withThemeByClassName } from "@storybook/addon-themes";
 import "@fontsource-variable/manrope";
 import "@ektyra/ui/styles.css";
 import "./preview.css";
+import { withProviders } from "./providers";
 
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
@@ -15,6 +16,7 @@ const preview: Preview = {
     docs: { toc: true },
   },
   decorators: [
+    withProviders,
     withThemeByClassName({
       themes: { light: "", dark: "dark" },
       defaultTheme: prefersDark ? "dark" : "light",
