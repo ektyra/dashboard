@@ -1,0 +1,28 @@
+/* Canvas and docs pages use the same background and text as the template. */
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+.sb-show-main,
+.docs-story,
+.sbdocs-wrapper,
+.sbdocs-content {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.sbdocs,
+.sbdocs h1,
+.sbdocs h2,
+.sbdocs h3,
+.sbdocs h4,
+.sbdocs p,
+.sbdocs li,
+.sbdocs td,
+.sbdocs th {
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}

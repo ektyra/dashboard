@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ektyra/ui": "workspace:*",
+    "@fontsource-variable/manrope": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
