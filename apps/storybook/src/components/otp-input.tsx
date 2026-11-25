@@ -80,7 +80,7 @@ export function OtpInput({
   };
 
   return (
-    <div role="group" aria-label={label} id={id} className="flex gap-2">
+    <div role="group" aria-label={label} id={id} className="flex w-full max-w-sm gap-2">
       {digits.map((digit, index) => (
         <input
           key={index}
@@ -89,6 +89,7 @@ export function OtpInput({
           }}
           value={digit}
           inputMode="numeric"
+          placeholder="·"
           autoComplete={index === 0 ? "one-time-code" : "off"}
           disabled={disabled}
           aria-label={`${label}, digit ${index + 1} of ${length}`}
@@ -112,7 +113,7 @@ export function OtpInput({
           }}
           className={cn(
             length === 6 && index === 2 && "mr-3",
-            "h-14 w-0 min-w-0 flex-1 text-xl rounded-md border border-input bg-background text-center tabular-nums outline-none transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/15",
+            "h-14 min-w-0 max-w-14 flex-1 basis-12 rounded-lg border border-input bg-card text-center text-2xl font-medium tabular-nums shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/15 not-placeholder-shown:border-primary/60",
           )}
         />
       ))}
