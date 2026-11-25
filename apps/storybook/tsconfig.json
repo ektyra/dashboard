@@ -1,4 +1,5 @@
 {
   "extends": "../../packages/ui/tsconfig.json",
-  "include": [".storybook", "stories", "../../packages/ui/src"]
+  "compilerOptions": { "paths": { "#/*": ["./src/*"] } },
+  "include": [".storybook", "stories", "src"]
 }

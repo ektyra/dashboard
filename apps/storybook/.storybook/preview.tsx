@@ -2,7 +2,7 @@
 import type { Preview } from "@storybook/react-vite";
 import { withThemeByClassName } from "@storybook/addon-themes";
 import "@fontsource-variable/manrope";
-import "@ektyra/ui/styles.css";
+import "../src/styles.css";
 import "./preview.css";
 import { withProviders } from "./providers";
 
