@@ -7,7 +7,7 @@ import {
   createRouter,
 } from "@tanstack/react-router";
 import { Tooltip } from "radix-ui";
-import { Toaster } from "sonner";
+import { Toaster } from "../src/components/sonner";
 
 const StoryContext = createContext<ReactNode>(null);
 
