@@ -1,3 +1,13 @@
 @import "tailwindcss";
 @import "./styles/index.css";
 @source ".";
+
+/* Sidebar width. Resting values live here; Motion drives the inline
+   --sidebar-width while collapsing or expanding. */
+:root {
+  --sidebar-width: 16rem;
+}
+
+html[data-sidebar="collapsed"] {
+  --sidebar-width: 4rem;
+}
