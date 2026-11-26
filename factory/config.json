@@ -1,0 +1,26 @@
+{
+  "repository": "ektyra/dashboard",
+  "baseBranch": "main",
+  "maxFixRounds": 2,
+  "needsHumanLabel": "needs you",
+  "builderModel": {
+    "low": "sonnet",
+    "normal": "opus"
+  },
+  "checks": [
+    ["vp", "install", "--frozen-lockfile"],
+    ["vp", "check"],
+    ["vp", "run", "-r", "test"],
+    ["vp", "run", "-r", "build"]
+  ],
+  "protectedPaths": [
+    ".claude/",
+    ".github/",
+    ".vite-hooks/",
+    "factory/",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "commitlint.config.js",
+    "vite.config.ts"
+  ]
+}
