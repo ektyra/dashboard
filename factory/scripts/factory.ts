@@ -6,8 +6,10 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
+import { blocks, promptFile, render, runCodex } from "./codex.ts";
+import type { Model } from "./codex.ts";
 
-type Stage = "plan" | "build" | "passed" | "pr" | "needs-human" | "canceled";
+type Stage = "plan" | "build" | "passed" | "reviewed" | "pr" | "needs-human" | "canceled";
 type Risk = "low" | "normal";
 
 type Job = {
@@ -18,8 +20,12 @@ type Job = {
   branch?: string;
   worktree?: string;
   planHash?: string;
-  failedGates: number;
+  critiqueHash?: string;
+  failedRounds: number;
   passedSha?: string;
+  reviewedSha?: string;
+  rejectedSha?: string;
+  override?: string;
   pr?: string;
 };
 
@@ -31,6 +37,11 @@ type Config = {
   builderModel: Record<Risk, string>;
   checks: string[][];
   protectedPaths: string[];
+  codex: {
+    timeoutMinutes: number;
+    critique: Model;
+    reviewers: Record<string, Model & { risks: Risk[] }>;
+  };
 };
 
 type GitHubText = {
@@ -45,7 +56,7 @@ const jobsDir = join(root, "factory/jobs");
 const config = JSON.parse(readFileSync(join(root, "factory/config.json"), "utf8")) as Config;
 const trusted = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
 const types = ["feat", "fix", "chore", "docs", "refactor", "test", "perf"];
-const active = new Set<Stage>(["plan", "build", "passed"]);
+const active = new Set<Stage>(["plan", "build", "passed", "reviewed"]);
 
 class Refused extends Error {}
 
@@ -156,14 +167,61 @@ function start(issue: number) {
     ...comments.flatMap((c) => ["", `## Comment by ${c.user.login}`, "", quote(c.body ?? "")]),
   ];
   writeFileSync(join(jobDir(issue), "issue.md"), `${text.join("\n")}\n`);
-  save({ issue, title: data.title, stage: "plan", failedGates: 0 });
+  save({ issue, title: data.title, stage: "plan", failedRounds: 0 });
   status(issue);
 }
 
-function approve(issue: number, type: string | undefined, risk: string | undefined) {
+function codex(job: Job, name: string, model: Model, cwd: string, context: string[]) {
+  return runCodex({
+    ...model,
+    cwd,
+    prompt: [promptFile(root, name), ...context].join("\n\n"),
+    schema: join(root, "factory/schemas/review.json"),
+    output: join(jobDir(job.issue), `${name}.json`),
+    timeoutMinutes: config.codex.timeoutMinutes,
+  });
+}
+
+const attach = (job: Job, file: string) =>
+  `<${file}>\n${readFileSync(join(jobDir(job.issue), file), "utf8").trim()}\n</${file}>`;
+
+/** A fix round used up. Past the limit, only a human can restart the job. */
+function failRound(job: Job) {
+  job.failedRounds += 1;
+  delete job.passedSha;
+  delete job.reviewedSha;
+  job.stage = job.failedRounds > config.maxFixRounds ? "needs-human" : "build";
+}
+
+async function critique(issue: number) {
+  const job = load(issue);
+  requireStage(job, "plan", "needs-human");
+  const hash = planHash(issue);
+  const model = config.codex.critique;
+  const report = await codex(job, "critique", model, root, [
+    attach(job, "issue.md"),
+    attach(job, "plan.md"),
+  ]);
+  if (planHash(issue) !== hash) refuse("plan.md changed during the critique. Run it again.");
+  writeFileSync(join(jobDir(issue), "critique.md"), `${render("critique", model, report)}\n`);
+  job.critiqueHash = hash;
+  save(job);
+  console.log(`CRITIQUE: ${blocks(report) ? "CHANGES" : "PASS"}`);
+  status(issue);
+}
+
+function approve(
+  issue: number,
+  type: string | undefined,
+  risk: string | undefined,
+  withoutCritique: boolean,
+) {
   const job = load(issue);
   requireStage(job, "plan", "needs-human");
   if (risk !== "low" && risk !== "normal") refuse("--risk must be low or normal");
+  if (!withoutCritique && job.critiqueHash !== planHash(issue)) {
+    refuse("this version of plan.md has no critique. Run critique first.");
+  }
 
   if (!job.branch) {
     if (!type || !types.includes(type)) refuse(`--type must be one of: ${types.join(", ")}`);
@@ -191,8 +249,9 @@ function approve(issue: number, type: string | undefined, risk: string | undefin
 
   job.risk = risk;
   job.stage = "build";
-  job.failedGates = 0;
+  job.failedRounds = 0;
   delete job.passedSha;
+  delete job.reviewedSha;
   save(job);
   status(issue);
 }
@@ -223,7 +282,7 @@ function protectedChanges(path: string) {
 
 function gate(issue: number) {
   const job = load(issue);
-  requireStage(job, "build", "passed", "pr");
+  requireStage(job, "build", "passed", "reviewed", "pr");
   requireApprovedPlan(job);
   const { path } = workspace(job);
   if (dirty(path)) refuse("the worktree has uncommitted changes. Commit them first.");
@@ -266,13 +325,14 @@ function gate(issue: number) {
   writeFileSync(join(jobDir(issue), "gate.md"), `${report.join("\n")}\n`);
   writeFileSync(join(jobDir(issue), "gate.log"), log);
 
+  delete job.reviewedSha;
+  delete job.rejectedSha;
+  delete job.override;
   if (passed) {
     job.stage = "passed";
     job.passedSha = sha;
   } else {
-    job.failedGates += 1;
-    delete job.passedSha;
-    job.stage = job.failedGates > config.maxFixRounds ? "needs-human" : "build";
+    failRound(job);
   }
   save(job);
   console.log(`GATE: ${passed ? "PASS" : "FAIL"}  (${join(jobDir(issue), "gate.md")})`);
@@ -280,47 +340,119 @@ function gate(issue: number) {
   if (!passed) process.exitCode = 1;
 }
 
-function openPullRequest(issue: number, title: string | undefined) {
+async function review(issue: number) {
   const job = load(issue);
   requireStage(job, "passed");
   requireApprovedPlan(job);
-  const { path, branch } = workspace(job);
-  if (dirty(path) || head(path) !== job.passedSha) {
+  const { path } = workspace(job);
+  const sha = head(path);
+  if (dirty(path) || sha !== job.passedSha) {
     refuse("the branch changed after the gate passed. Run gate again.");
+  }
+  const reviewers = Object.entries(config.codex.reviewers).filter(
+    ([, reviewer]) => job.risk && reviewer.risks.includes(job.risk),
+  );
+  if (reviewers.length === 0) refuse(`no reviewer is configured for risk "${job.risk}"`);
+
+  const base = must("git", ["merge-base", `origin/${config.baseBranch}`, "HEAD"], path).trim();
+  const earlier = existsSync(join(jobDir(issue), "review.md"));
+  const context = [
+    `The change is \`git diff ${base} ${sha}\`. The plan and build notes follow.`,
+    attach(job, "plan.md"),
+    attach(job, "build.md"),
+    ...(earlier ? [attach(job, "review.md")] : []),
+  ];
+  const results = await Promise.allSettled(
+    reviewers.map(async ([name, model]) => {
+      const report = await codex(job, name, model, path, context);
+      return { text: render(name, model, report), blocking: blocks(report) };
+    }),
+  );
+  const failures = results.flatMap((r) => (r.status === "rejected" ? [String(r.reason)] : []));
+  if (failures.length > 0) refuse(`review did not finish:\n${failures.join("\n")}`);
+  if (dirty(path) || head(path) !== sha) refuse("the branch changed during the review");
+
+  const reports = results.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []));
+  const passed = reports.every((r) => !r.blocking);
+  const text = [
+    `REVIEW: ${passed ? "PASS" : "CHANGES"}`,
+    `COMMIT: ${sha}`,
+    ...reports.map((r) => r.text),
+  ];
+  writeFileSync(join(jobDir(issue), "review.md"), `${text.join("\n\n")}\n`);
+
+  if (passed) {
+    job.stage = "reviewed";
+    job.reviewedSha = sha;
+  } else {
+    failRound(job);
+    job.rejectedSha = sha;
+  }
+  save(job);
+  console.log(`REVIEW: ${passed ? "PASS" : "CHANGES"}  (${join(jobDir(issue), "review.md")})`);
+  status(issue);
+  if (!passed) process.exitCode = 1;
+}
+
+/** The human accepts a commit that review rejected. The reason goes into the pull request. */
+function override(issue: number, reason: string | undefined) {
+  const job = load(issue);
+  requireStage(job, "build", "needs-human");
+  requireApprovedPlan(job);
+  const { path } = workspace(job);
+  if (dirty(path) || head(path) !== job.rejectedSha) {
+    refuse("override only applies to the exact commit the last review rejected");
+  }
+  if (!reason) refuse("--reason is required");
+  job.stage = "reviewed";
+  job.reviewedSha = job.rejectedSha;
+  job.override = reason;
+  save(job);
+  status(issue);
+}
+
+function openPullRequest(issue: number, title: string | undefined) {
+  const job = load(issue);
+  requireStage(job, "reviewed");
+  requireApprovedPlan(job);
+  const { path, branch } = workspace(job);
+  if (dirty(path) || head(path) !== job.reviewedSha) {
+    refuse("the branch changed after the review. Run gate and review again.");
   }
   const pattern = new RegExp(`^(${types.join("|")})(\\([a-z0-9._-]+\\))?!?: \\S`);
   if (!title || !pattern.test(title)) refuse("--title must follow Conventional Commits");
   const summary = join(jobDir(issue), "build.md");
   if (!existsSync(summary)) refuse(`${summary} is missing`);
 
+  const body = [
+    readFileSync(summary, "utf8")
+      .replace(/^STATUS:.*\n/, "")
+      .trim(),
+    "",
+    `Closes #${issue}`,
+    "",
+    "<details><summary>Factory checks and AI review</summary>",
+    "",
+    `Checks passed on ${job.reviewedSha}.`,
+    "",
+    readFileSync(join(jobDir(issue), "review.md"), "utf8").trim(),
+    "",
+    "</details>",
+    ...(job.override ? ["", `**Review overridden by a human:** ${job.override}`] : []),
+  ].join("\n");
+
   must("git", ["push", "-u", "origin", branch], path);
+  const repo = ["--repo", config.repository];
   const open = JSON.parse(
-    must("gh", ["pr", "list", "--repo", config.repository, "--head", branch, "--json", "url"]),
+    must("gh", ["pr", "list", ...repo, "--head", branch, "--json", "url"]),
   ) as { url: string }[];
+  const text = ["--title", title, "--body", body];
   if (open.length > 0) {
     job.pr = open[0].url;
+    must("gh", ["pr", "edit", job.pr, ...repo, ...text]);
   } else {
-    const body = [
-      readFileSync(summary, "utf8").trim(),
-      "",
-      `Closes #${issue}`,
-      "",
-      `Factory checks passed on ${job.passedSha}. No AI review has run on this change.`,
-    ].join("\n");
-    job.pr = must("gh", [
-      "pr",
-      "create",
-      "--repo",
-      config.repository,
-      "--base",
-      config.baseBranch,
-      "--head",
-      branch,
-      "--title",
-      title,
-      "--body",
-      body,
-    ]).trim();
+    const target = ["--base", config.baseBranch, "--head", branch];
+    job.pr = must("gh", ["pr", "create", ...repo, ...target, ...text]).trim();
   }
   job.stage = "pr";
   save(job);
@@ -367,14 +499,17 @@ function status(issue?: number) {
 
 const usage = `usage: factory.ts <command> [issue]
   start <issue>
-  approve <issue> --type <type> --risk <low|normal>
+  critique <issue>
+  approve <issue> --type <type> --risk <low|normal> [--without-critique]
   gate <issue>
+  review <issue>
+  override <issue> --reason <text>
   pr <issue> --title <title>
   escalate <issue> --reason <text>
   cancel <issue>
   status [issue]`;
 
-function main() {
+async function main() {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
     options: {
@@ -382,6 +517,7 @@ function main() {
       risk: { type: "string" },
       title: { type: "string" },
       reason: { type: "string" },
+      "without-critique": { type: "boolean", default: false },
     },
   });
   const [command, raw] = positionals;
@@ -390,8 +526,13 @@ function main() {
   if (!command || !Number.isInteger(issue) || issue <= 0) refuse(usage);
 
   if (command === "start") return start(issue);
-  if (command === "approve") return approve(issue, values.type, values.risk);
+  if (command === "critique") return critique(issue);
+  if (command === "approve") {
+    return approve(issue, values.type, values.risk, values["without-critique"]);
+  }
   if (command === "gate") return gate(issue);
+  if (command === "review") return review(issue);
+  if (command === "override") return override(issue, values.reason);
   if (command === "pr") return openPullRequest(issue, values.title);
   if (command === "escalate") return escalate(issue, values.reason);
   if (command === "cancel") return cancel(issue);
@@ -400,7 +541,7 @@ function main() {
 }
 
 try {
-  main();
+  await main();
 } catch (error) {
   if (!(error instanceof Refused)) throw error;
   console.error(`refused: ${error.message}`);

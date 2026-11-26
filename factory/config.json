@@ -22,5 +22,13 @@
     "CLAUDE.md",
     "commitlint.config.js",
     "vite.config.ts"
-  ]
+  ],
+  "codex": {
+    "timeoutMinutes": 20,
+    "critique": { "model": "gpt-6.2-astra", "effort": "high" },
+    "reviewers": {
+      "code": { "model": "gpt-6.2-sol", "effort": "high", "risks": ["low", "normal"] },
+      "security": { "model": "gpt-6.2-astra", "effort": "high", "risks": ["normal"] }
+    }
+  }
 }
